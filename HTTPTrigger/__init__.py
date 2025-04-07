@@ -40,7 +40,17 @@ def make_message(posts):
     message_text = edit_message(nposts)
     return {"text": message_text}
 
-
+def format_group(name, emoji, items):
+    if not items:
+        return ""
+    section = f"## {emoji} {name}\n\n"
+    for date, title, category, link in items:
+        section += (f"📅 {date}\n"
+                    f"🔹 {title}\n"
+                    f"📌 Category: {category}\n"
+                    f"🔗 {link}\n\n")
+    return section
+    
 def edit_message(message):
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2})\n\[(.*?)\] (.*?)\ncategory > (.*?)\n(https://\S+)")
     matches = pattern.findall(message)
@@ -73,17 +83,6 @@ def edit_message(message):
             grouped["Other"].append((date, title, category, link))
 
     output = "🆕 Azure Updates (최근 1주일)\n\n"
-
-    def format_group(name, emoji, items):
-        if not items:
-            return ""
-        section = f"## {emoji} {name}\n\n"
-        for date, title, category, link in items:
-            section += (f"📅 {date}\n"
-                        f"🔹 {title}\n"
-                        f"📌 Category: {category}\n"
-                        f"🔗 {link}\n\n")
-        return section
 
     output += format_group("Launched", "🟢", grouped["Launched"])
     output += format_group("Preview", "🟡", grouped["Preview"])
