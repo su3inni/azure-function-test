@@ -40,21 +40,58 @@ def make_message(posts):
     message_text = edit_message(nposts)
     return {"text": message_text}
 
+
 def edit_message(message):
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2})\n\[(.*?)\] (.*?)\ncategory > (.*?)\n(https://\S+)")
     matches = pattern.findall(message)
-    matches.sort(reverse=True, key=lambda x: x[0])
 
-    output = "🆕 Azure Updates \n\n<br>"
-    current_date = None
+    # title에서 Launched, Preview, Retirement 제거
+    cleaned = []
     for date, status, title, category, link in matches:
-        if date != current_date:
-            output += f"📅 {date}\n\n"
-            current_date = date
-        emoji = "🟢" if "Launched" in status else "🟡"
-        output += f"{emoji} {title} \n\n 🔗 {link}  \n  📌Category: {category}\n\n<br>"
+        for keyword in ["Launched", "Preview", "Retirement"]:
+            title = title.replace(keyword, "").strip()
+        cleaned.append((date, status, title, category, link))
+
+    # 날짜 기준 정렬 (내림차순)
+    cleaned.sort(reverse=True, key=lambda x: x[0])
+
+    grouped = {
+        "Launched": [],
+        "Preview": [],
+        "Retirement": [],
+        "Other": []
+    }
+
+    for date, status, title, category, link in cleaned:
+        if "Launched" in status:
+            grouped["Launched"].append((date, title, category, link))
+        elif "Preview" in status:
+            grouped["Preview"].append((date, title, category, link))
+        elif "Retirement" in status:
+            grouped["Retirement"].append((date, title, category, link))
+        else:
+            grouped["Other"].append((date, title, category, link))
+
+    output = "🆕 Azure Updates (최근 1주일)\n\n"
+
+    def format_group(name, emoji, items):
+        if not items:
+            return ""
+        section = f"## {emoji} {name}\n\n"
+        for date, title, category, link in items:
+            section += (f"📅 {date}\n"
+                        f"🔹 {title}\n"
+                        f"📌 Category: {category}\n"
+                        f"🔗 {link}\n\n")
+        return section
+
+    output += format_group("Launched", "🟢", grouped["Launched"])
+    output += format_group("Preview", "🟡", grouped["Preview"])
+    output += format_group("Retirement", "❌", grouped["Retirement"])
+    output += format_group("기타", "ℹ️", grouped["Other"])
 
     return output
+
 
 def send_to_teams(message, webhook_url):
     headers = {"Content-Type": "application/json"}
