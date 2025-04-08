@@ -70,7 +70,13 @@ def edit_message(message):
             output += f"📅 {date}\n\n"
             current_date = date
 
-        emoji = "🟢" if "Launched" in status else "🟡"
+        emoji = ""
+        if "Launch" in status : 
+            emoji = "🟢" 
+        elif "In preview" in status :
+            emoji = "🟡"
+        elif "Retirement" in status : 
+            emoji = "🔴"        
         output += f"{emoji} {title} \n\n 🔗 {link}  \n  📌Category: {category}\n\n"
         output+=f"<br>"
         
