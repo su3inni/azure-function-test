@@ -67,7 +67,8 @@ def edit_message(message):
             emoji = "🟡"
         elif "Retirement" in status : 
             emoji = "🔴"        
-        output += f"{emoji} {title} \n\n 🔗 {link}  \n  📌Category: {category}\n\n"
+        stitle = title.split(":",1)
+        output += f"{emoji}{stitle[0]} \n\n ##{stitle[1]} \n\n 🔗 {link}  \n  📌Category : {category}\n\n"
         output+=f"<br>"
         
 
